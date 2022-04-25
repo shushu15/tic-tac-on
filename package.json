@@ -8,6 +8,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "jshint": "^2.13.4",
     "vue": "^3.2.33"
   },
   "devDependencies": {
