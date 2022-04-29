@@ -1,10 +1,15 @@
 <template>
   <button class="square" :name="label" :disabled="winner || value">
+    <img alt="X" class="logo" src="./../assets/fa-x.svg" width="125" height="125" v-show="valX(value)" />
+    <img alt="O" class="logo" src="./../assets/fa-o.svg" width="125" height="125" v-show="valO(value)" />
+
     {{ value }}
   </button>
 </template>
 
 <script>
+import * as tconst from "@/lib/const.js"
+
   export default {
     props: {
       label: String,
@@ -14,6 +19,15 @@
       },
       winner: null,
     },
+    methods: {
+    valX (val) {
+        return val === tconst.X;
+    },
+    valO (val) {
+        return val === tconst.O;
+    },
+    }
+    
   };
 </script>
 

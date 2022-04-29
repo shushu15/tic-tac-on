@@ -29,11 +29,11 @@
     } },  
    methods: {
       performMove(i, side) {
-        if (this.board[i] !== tconst.EMPTY_CEL) {
+        if (this.board[i] !== tconst.EMPTY_CELL) {
           // Invalid move.
           return;
         }
-        this.board[i] = side; // 'x';
+        this.board.splice(i, 1, side); // reactively modify 'x';
         this.changeTurn();
       },
       changeTurn(){ this.turn = this.turn == tconst.X? tconst.O: tconst.X}
