@@ -7,7 +7,7 @@
   </header>
 
   <main>
-    <TicBoard msg="Tic Tac Toe" />
+    <TicBoard />
   </main>
 </template>
 

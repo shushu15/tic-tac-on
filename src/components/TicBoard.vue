@@ -11,6 +11,11 @@
       :winner="winnerCell(i)"
     />
   </div>
+  <div v-if="this.winner" >
+        <h1>Finished: {{ this.winner }} </h1>
+        <button class="reset" @click="startGame">Play Again</button>
+  </div>
+  <div v-else>Next Up: {{ this.turn }}</div>  
 </template>
 
 <script>
@@ -27,6 +32,10 @@
     [0, 4, 8],
     [2, 4, 6],
   ];
+  let gamerecord = {
+    moves: [],
+    result: ' ',
+  }
 
   export default {
     name: "TicBoard",
@@ -48,10 +57,14 @@
             this.board[a] === this.board[c]
           ) {
             console.log(`calculateWinner ${a}`);
+            gamerecord.result = this.board[a];
             return lines[i];
           }
         }
-        if (this.board.every((val) => val)) return tconst.DRAW;
+        if (this.board.every((val) => val)) {
+          gamerecord.result = tconst.DRAW;
+          return tconst.DRAW;
+        }
 
         return tconst.EMPTY_CELL;
       }
@@ -67,6 +80,7 @@
           return;
         }
         this.board.splice(i, 1, this.turn); // reactively modify 'x';
+        gamerecord.moves.push(this.turn === tconst.X? i: -i); // save cell number positive for X negative for O
         let w = this.calculateWinner;
         if (w !== null && Array.isArray(w) && w.length > 0)
           this.winner = this.board[w[0]];
@@ -82,6 +96,11 @@
         }
         return false;
 
+      },
+      startGame() {
+        this.board.fill(tconst.EMPTY_CELL);
+        this.turn= tconst.X;
+        this.winner= tconst.EMPTY_CELL;
       }
     }    
   };
