@@ -1,10 +1,8 @@
 <template>
-  <button class="square" :name="label" :disabled="winner || value">
-    <img alt="X" class="logo" src="./../assets/fa-x.svg" width="125" height="125" v-show="valX(value)" />
-    <img alt="O" class="logo" src="./../assets/fa-o.svg" width="125" height="125" v-show="valO(value)" />
-
-    {{ value }}
-  </button>
+  <div class="square" :name="label" :class="isFinished()? 'addwinner': ''">
+    <img alt="X" class="xo" src="./../assets/fa-x.svg"  v-if="valX(value)" />
+    <img alt="O" class="xo" src="./../assets/fa-o.svg" v-if="valO(value)" />
+  </div>
 </template>
 
 <script>
@@ -15,9 +13,12 @@ import * as tconst from "@/lib/const.js"
       label: String,
       value: {
         type: String,
-        default: " ",
+        default: tconst.EMPTY_CELL,
       },
-      winner: null,
+      winner: {
+        type: Boolean,
+        default: false,
+      }
     },
     methods: {
     valX (val) {
@@ -25,6 +26,10 @@ import * as tconst from "@/lib/const.js"
     },
     valO (val) {
         return val === tconst.O;
+    },
+    isFinished() {
+        console.log(`isFinished ${this.winner}`)
+        return this.winner;
     },
     }
     
@@ -74,4 +79,16 @@ import * as tconst from "@/lib/const.js"
   .square:nth-child(7) {
     border-left: none;
   }
+  .square.addwinner,  .square.addwinner:focus{
+    background: radial-gradient(circle at center, rgb(238, 129, 129) 0, rgba(255, 255, 255, 0.25) 100%);
+  }
+
+  .xo {
+    margin: auto;
+    padding: 1rem;
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+  }
+
 </style>

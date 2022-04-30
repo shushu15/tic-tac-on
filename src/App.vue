@@ -1,27 +1,32 @@
-<script setup>
-import TicBoard from './components/TicBoard.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-    <img alt="X" class="logo" src="./assets/fa-o.svg" width="125" height="125" />
-    <img alt="O" class="logo" src="./assets/fa-x.svg" width="125" height="125" />
+    <!-- img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" / -->
 
     <div class="wrapper">
-      <TicBoard msg="Tic Tac Toe" />
     </div>
   </header>
 
   <main>
-    <TheWelcome />
+    <TicBoard msg="Tic Tac Toe" />
   </main>
 </template>
 
+<script>
+import TicBoard from './components/TicBoard.vue'
+export default {
+  name: "App",
+  components: {
+    TicBoard,
+  },
+};
+</script>
 <style>
 @import './assets/base.css';
 
+ body {
+    display: flex;
+    place-items: center;
+  }
 #app {
   max-width: 1280px;
   margin: 0 auto;
@@ -34,10 +39,6 @@ header {
   line-height: 1.5;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
 
 a,
 .green {
@@ -58,12 +59,7 @@ a,
     place-items: center;
   }
 
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
-
+  
   header {
     display: flex;
     place-items: center;
@@ -76,8 +72,5 @@ a,
     flex-wrap: wrap;
   }
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
 }
 </style>
