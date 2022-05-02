@@ -8,14 +8,16 @@
       :label="`cell-${i}`"
       :value="cell"
       @click="performMove(i)"
-      :winner="winnerCell(i)"
+      :glow="winnerCell(i)"
     />
   </div>
   <div v-if="this.winner" >
-        <h1>Finished: {{ this.winner }} </h1>
-        <button class="reset" @click="startGame">Play Again</button>
+      <h1>Finished: {{ this.result }} </h1>
+      <button class="btn_new" @click="startGame">Play Again</button>
   </div>
-  <div v-else>Next Up: {{ this.turn }}</div>  
+    <div v-else>
+      <h1>Turn: {{ this.turn }}</h1>
+    </div>  
 </template>
 
 <script>
@@ -67,23 +69,30 @@
         }
 
         return tconst.EMPTY_CELL;
-      }
+      },
+      result() {
+        if (this.winner === tconst.DRAW) return "Draw Game";
+        return 'Winner ' + (this.winner === tconst.X? tconst.X: this.winner === tconst.O? tconst.O: 'Undefined');
+      },
     },
    methods: {
       performMove(i) {
         console.log(`performMove ${i} ${this.turn}`);
-        if (this.board[i] !== tconst.EMPTY_CELL) {
-          // Invalid move.
+        if (this.winner !== tconst.EMPTY_CELL) { // already finished
           return;
         }
-        if (this.winner !== tconst.EMPTY_CELL) { // already finished
+        if (this.board[i] !== tconst.EMPTY_CELL) {
+          // Invalid move.
           return;
         }
         this.board.splice(i, 1, this.turn); // reactively modify 'x';
         gamerecord.moves.push(this.turn === tconst.X? i: -i); // save cell number positive for X negative for O
         let w = this.calculateWinner;
-        if (w !== null && Array.isArray(w) && w.length > 0)
-          this.winner = this.board[w[0]];
+        console.log(`performMove 2 ${w}`);
+        if (w !== null) {
+          if( Array.isArray(w) && w.length > 0) this.winner = this.board[w[0]];
+          else if (w === tconst.DRAW) this.winner = w;
+        }
         this.changeTurn();
       },
       changeTurn(){ this.turn = this.turn == tconst.X? tconst.O: tconst.X},
@@ -101,7 +110,7 @@
         this.board.fill(tconst.EMPTY_CELL);
         this.turn= tconst.X;
         this.winner= tconst.EMPTY_CELL;
-      }
+      },
     }    
   };
 </script>
@@ -116,12 +125,12 @@
 
   .board::before,
   .board::after {
-    background: linear-gradient(to right, #41b883, #35495e);
+    background: hsla(160, 100%, 37%, 1);
   }
 
   .vertical-line-1,
   .vertical-line-2 {
-    background: linear-gradient(to right, #41b883, #35495e);
+    background: hsla(160, 100%, 37%, 1);
   }
 
   .board::before,
@@ -158,4 +167,12 @@
   .vertical-line-2 {
     left: 66%;
   }
+  .btn_new {
+    background: hsla(160, 100%, 37%, 1);
+    border: none;
+    border-radius: 5px;
+    padding: 1rem 1.5rem;
+    color: black;
+    text-transform: uppercase;
+}
 </style>
