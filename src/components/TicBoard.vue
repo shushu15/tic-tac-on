@@ -17,7 +17,7 @@
       <div class="card">
         <div v-if="this.winner" >
           <h2>Finished: {{ this.result }} </h2>
-          <Button @click="startGame" label="Play Again" class="p-button-success"></Button>
+          <Button @click="startGame" label="Play Again" icon="pi pi-replay" class="p-button-success"></Button>
         </div>
         <div v-else>
           <h2>Turn: {{ this.turn }}</h2>
@@ -26,7 +26,7 @@
     </div>
     <div class="col-12 md:col-6 field">
       <div class="card">
-        <Button type="button" label="Saved Games" badge="8"  />
+        <Button type="button" label="Saved Games" :badge="`${this.storedCounter}`"  />
         <Dropdown v-model="selectedGame" :options="savedGames" optionLabel="name" optionValue="code" placeholder="Select a Game" />
       </div>
     </div>
@@ -74,6 +74,7 @@
         {name: 'Istanbul', code: 'IST'},
         {name: 'Paris', code: 'PRS'},
       ],
+      storedCounter: 0,
 
     } }, 
     computed: {
@@ -120,7 +121,7 @@
           if( Array.isArray(w) && w.length > 0) this.winner = this.board[w[0]];
           else if (w === tconst.DRAW) this.winner = w;
           gamerecord.result = this.winner;
-          this.db_saveGame();
+          this.db_saveGame().then(()=> DB.count()).then((res) => this.storedCounter = res);
           // save game
         }
         this.changeTurn();
@@ -155,6 +156,8 @@
             DB.getGames().then((result) => {
               if (typeof result == 'object') {
                 //TODO: fill games list
+                DB.count().then((res)=> this.storedCounter = res);
+
               }
             }); 
           }
@@ -169,6 +172,7 @@
                 result = res;
                 console.log(`db_saveGame error ${res}`); // eslint-disable-line no-console
               } else result = DB.DB_OK;
+              DB.count().then((res)=> this.storedCounter = res);
               resolve(result);
             });
           }

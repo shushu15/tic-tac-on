@@ -93,6 +93,10 @@ export async function saveGame(to_result, to_save, to_square){
 }
 
 
+export async function count() {
+  const value = await db.count(storeGames);
+  return value;   
+}
 /**
  * @param cache  dbCache.stickers
  */
