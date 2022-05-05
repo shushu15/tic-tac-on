@@ -27,7 +27,7 @@
     <div class="col-12 md:col-6 field">
       <div class="card">
         <Button type="button" label="Saved Games" :badge="`${this.storedCounter}`"  />
-        <Dropdown v-model="selectedGame" :options="savedGames" optionLabel="name" optionValue="code" placeholder="Select a Game" />
+        <Dropdown v-model="selectedGame" :options="savedGames" optionLabel="Result" optionValue="Record" placeholder="Select a Game" />
       </div>
     </div>
   </div>
@@ -67,13 +67,7 @@
       turn: tconst.X,
       winner: tconst.EMPTY_CELL,
       selectedGame: null,
-      savedGames: [
-        {name: 'New York', code: 'NY'},
-        {name: 'Rome', code: 'RM'},
-        {name: 'London', code: 'LDN'},
-        {name: 'Istanbul', code: 'IST'},
-        {name: 'Paris', code: 'PRS'},
-      ],
+      savedGames: [],
       storedCounter: 0,
 
     } }, 
@@ -144,6 +138,7 @@
         gamerecord.moves = [];
         gamerecord.result = ' ';
       },
+
       async db_init() {
         if(DB.getDB()) {
           console.log('db_init db already in use'); // eslint-disable-line no-console
@@ -156,6 +151,8 @@
             DB.getGames().then((result) => {
               if (typeof result == 'object') {
                 //TODO: fill games list
+                while (this.savedGames.length > 0) this.savedGames.pop();
+                result.forEach((elem)=> this.savedGames.push(elem) );
                 DB.count().then((res)=> this.storedCounter = res);
 
               }
