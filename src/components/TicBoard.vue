@@ -11,18 +11,35 @@
       :glow="winnerCell(i)"
     />
   </div>
-  <div v-if="this.winner" >
-      <h1>Finished: {{ this.result }} </h1>
-      <button class="btn_new" @click="startGame">Play Again</button>
+
+  <div class="p-fluid grid mt-2">
+    <div class="col-12 md:col-6 field">
+      <div class="card">
+        <div v-if="this.winner" >
+          <h2>Finished: {{ this.result }} </h2>
+          <Button @click="startGame" label="Play Again" class="p-button-success"></Button>
+        </div>
+        <div v-else>
+          <h2>Turn: {{ this.turn }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 field">
+      <div class="card">
+        <Button type="button" label="Saved Games" badge="8"  />
+        <Dropdown v-model="selectedGame" :options="savedGames" optionLabel="name" optionValue="code" placeholder="Select a Game" />
+      </div>
+    </div>
   </div>
-    <div v-else>
-      <h1>Turn: {{ this.turn }}</h1>
-    </div>  
+
 </template>
 
 <script>
   import ACell from "./ACell.vue";
-  import * as tconst from "@/lib/const.js"
+  import * as tconst from "@/lib/const.js";
+  import * as DB from '@/lib/db.js';
+  
+ 
 
   const lines = [
     [0, 1, 2],
@@ -43,11 +60,21 @@
     name: "TicBoard",
     components: {
       ACell,
+      /* Button, Dropdown, Badge, */
     },
   data() { return {
       board: Array(9).fill(tconst.EMPTY_CELL),
       turn: tconst.X,
       winner: tconst.EMPTY_CELL,
+      selectedGame: null,
+      savedGames: [
+        {name: 'New York', code: 'NY'},
+        {name: 'Rome', code: 'RM'},
+        {name: 'London', code: 'LDN'},
+        {name: 'Istanbul', code: 'IST'},
+        {name: 'Paris', code: 'PRS'},
+      ],
+
     } }, 
     computed: {
       calculateWinner() {
@@ -92,6 +119,9 @@
         if (w !== null) {
           if( Array.isArray(w) && w.length > 0) this.winner = this.board[w[0]];
           else if (w === tconst.DRAW) this.winner = w;
+          gamerecord.result = this.winner;
+          this.db_saveGame();
+          // save game
         }
         this.changeTurn();
       },
@@ -110,9 +140,45 @@
         this.board.fill(tconst.EMPTY_CELL);
         this.turn= tconst.X;
         this.winner= tconst.EMPTY_CELL;
+        gamerecord.moves = [];
+        gamerecord.result = ' ';
       },
-    }    
-  };
+      async db_init() {
+        if(DB.getDB()) {
+          console.log('db_init db already in use'); // eslint-disable-line no-console
+          await DB.close();
+        }
+        await DB.init().then((res) => {
+          if (res === DB.DB_ERR || res === DB.DB_NOTFOUND) {
+            console.log(`db_init db error ${res}`); // eslint-disable-line no-console
+          } else { 
+            DB.getGames().then((result) => {
+              if (typeof result == 'object') {
+                //TODO: fill games list
+              }
+            }); 
+          }
+        });
+      },
+      db_saveGame() {
+        return new Promise((resolve) => {
+          let result = DB.DB_OFF;
+          if(DB.getDB()) {
+            DB.saveGame(gamerecord.result, gamerecord.moves, tconst.SQ_SIZE).then((res) => {
+              if (res === DB.DB_ERR || res === DB.DB_NOTFOUND) {
+                result = res;
+                console.log(`db_saveGame error ${res}`); // eslint-disable-line no-console
+              } else result = DB.DB_OK;
+              resolve(result);
+            });
+          }
+        });
+      }
+    },
+    mounted() {
+      this.db_init();
+    }
+}
 </script>
 
 <style scoped>

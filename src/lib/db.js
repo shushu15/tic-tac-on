@@ -7,6 +7,7 @@ import * as tconst from "@/lib/const.js";
  * games_played store fields:
  *  Result - String - X O = or * - unknown
  *  Record - String - game record itself (format in proces)
+ *  Size - Number - Board size square
  *  lastPlayed - Date.now() - date of last played (maybe only date, not time)
  *  PlayerX - not used now, can be any for one player, but not for multiplayer 
  *  PlayerO -not used now
@@ -49,16 +50,16 @@ export async function init(){
  * @param to_result - String game result, needs processing from null -> *
  * @param to_save - game record itsef
  */
-export async function saveGame(to_result, to_save){
+export async function saveGame(to_result, to_save, to_square){
   let res =  DB_ERR;
   try {
-    let oneRecord = {Result: to_result, Record: to_save, lastPlayed: Date.now()};
+    let oneRecord = {Result: to_result, Record: to_save, Size: to_square, lastPlayed: Date.now()};
     if (oneRecord.Result === null) oneRecord.Result = tconst.NO_RESULT;
     await db.add(storeGames, oneRecord);
     res =  DB_OK;
     // console.log(`db startGame ${typeof result === 'object'? JSON.stringify(result): result}`);
   } catch(err) {
-    console.log(`db startGame catch error ${err.toString()}`); // eslint-disable-line no-console
+    console.log(`db saveGame catch error ${err.toString()}`); // eslint-disable-line no-console
   }
   // console.log(`db startGame res=${res}`);
   return res;  
