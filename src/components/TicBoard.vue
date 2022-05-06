@@ -27,7 +27,7 @@
     <div class="col-12 md:col-6 field">
       <div class="card">
         <Button type="button" label="Saved Games" :badge="`${this.storedCounter}`"  />
-        <Dropdown v-model="selectedGame" :options="savedGames" optionLabel="Result" optionValue="Record" placeholder="Select a Game" />
+        <Dropdown v-model="selectedGame" :options="savedGames" optionLabel="lastPlayed" optionValue="Record" placeholder="Select a Game" />
       </div>
     </div>
   </div>
@@ -98,29 +98,31 @@
       },
     },
    methods: {
-      performMove(i) {
-        console.log(`performMove ${i} ${this.turn}`);
+      performMove(ind, replay = false) {
+        console.log(`performMove ${ind} ${this.turn}`);
         if (this.winner !== tconst.EMPTY_CELL) { // already finished
           return;
         }
-        if (this.board[i] !== tconst.EMPTY_CELL) {
+        if (this.board[ind] !== tconst.EMPTY_CELL) {
           // Invalid move.
           return;
         }
-        this.board.splice(i, 1, this.turn); // reactively modify 'x';
-        gamerecord.moves.push(this.turn === tconst.X? i: -i); // save cell number positive for X negative for O
+        this.board.splice(ind, 1, this.turn); // reactively modify 'x';
+        gamerecord.moves.push(this.turn === tconst.X? ind: -ind); // save cell number positive for X negative for O
         let w = this.calculateWinner;
         console.log(`performMove 2 ${w}`);
         if (w !== null) {
           if( Array.isArray(w) && w.length > 0) this.winner = this.board[w[0]];
           else if (w === tconst.DRAW) this.winner = w;
           gamerecord.result = this.winner;
-          this.db_saveGame().then(()=> DB.count()).then((res) => this.storedCounter = res);
+          if (!replay)
+            this.db_saveGame().then(()=> DB.count()).then((res) => this.storedCounter = res);
           // save game
         }
         this.changeTurn();
       },
       changeTurn(){ this.turn = this.turn == tconst.X? tconst.O: tconst.X},
+      setTurn(t){ this.turn = t},
       winnerCell(cellNo) {
         if (this.winner) {
           let w = this.calculateWinner;
@@ -138,6 +140,16 @@
         gamerecord.moves = [];
         gamerecord.result = ' ';
       },
+      loadGame() {
+        this.startGame();
+        if (this.selectedGame && Array.isArray(this.selectedGame)) {
+          this.selectedGame.forEach((elem, ind) => {
+            setTimeout(() => {             
+              this.performMove(Math.abs(elem), true); }, tconst.MOVING_DELAY * (ind+1)); 
+          })
+        }
+
+      },
 
       async db_init() {
         if(DB.getDB()) {
@@ -152,7 +164,14 @@
               if (typeof result == 'object') {
                 //TODO: fill games list
                 while (this.savedGames.length > 0) this.savedGames.pop();
-                result.forEach((elem)=> this.savedGames.push(elem) );
+                for (let i=result.length-1; i>0; i--) {
+                  let elem = result[i];
+                  let el2 = {id: elem.id, Result: elem.Result, Record: elem.Record, lastPlayed: new Date(elem.lastPlayed).toLocaleString()}; 
+                  this.savedGames.push(el2);
+                }
+                /* result.forEach((elem)=> {
+                  let el2 = {id: elem.id, Result: elem.Result, Record: elem.Record, lastPlayed: new Date(elem.lastPlayed).toLocaleString()}; 
+                  }); */
                 DB.count().then((res)=> this.storedCounter = res);
 
               }
@@ -169,12 +188,23 @@
                 result = res;
                 console.log(`db_saveGame error ${res}`); // eslint-disable-line no-console
               } else result = DB.DB_OK;
+              //TODO: add new rec to the games array
+
               DB.count().then((res)=> this.storedCounter = res);
               resolve(result);
             });
           }
         });
       }
+    },
+    watch: {
+      // whenever selectedGame changes, this function will run
+    selectedGame(newSelGame) {
+      if (newSelGame) {
+        this.loadGame();
+      }
+    }
+
     },
     mounted() {
       this.db_init();

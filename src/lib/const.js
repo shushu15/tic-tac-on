@@ -4,3 +4,4 @@ export const DRAW = '=';
 export const NO_RESULT = '*';
 export const EMPTY_CELL = null;
 export const SQ_SIZE = 3;
+export const MOVING_DELAY = 500;
