@@ -160,22 +160,7 @@
           if (res === DB.DB_ERR || res === DB.DB_NOTFOUND) {
             console.log(`db_init db error ${res}`); // eslint-disable-line no-console
           } else { 
-            DB.getGames().then((result) => {
-              if (typeof result == 'object') {
-                //TODO: fill games list
-                while (this.savedGames.length > 0) this.savedGames.pop();
-                for (let i=result.length-1; i>0; i--) {
-                  let elem = result[i];
-                  let el2 = {id: elem.id, Result: elem.Result, Record: elem.Record, lastPlayed: new Date(elem.lastPlayed).toLocaleString()}; 
-                  this.savedGames.push(el2);
-                }
-                /* result.forEach((elem)=> {
-                  let el2 = {id: elem.id, Result: elem.Result, Record: elem.Record, lastPlayed: new Date(elem.lastPlayed).toLocaleString()}; 
-                  }); */
-                DB.count().then((res)=> this.storedCounter = res);
-
-              }
-            }); 
+            this.fillGamesArray();
           }
         });
       },
@@ -187,16 +172,30 @@
               if (res === DB.DB_ERR || res === DB.DB_NOTFOUND) {
                 result = res;
                 console.log(`db_saveGame error ${res}`); // eslint-disable-line no-console
-              } else result = DB.DB_OK;
-              //TODO: add new rec to the games array
-
-              DB.count().then((res)=> this.storedCounter = res);
+              } else { 
+                result = DB.DB_OK;
+                this.fillGamesArray();                  
+              }
               resolve(result);
-            });
+            }); 
           }
         });
-      }
-    },
+      },
+      fillGamesArray() {
+        DB.getGames().then((result) => {
+          if (typeof result == 'object') {
+                //TODO: fill games list
+            while (this.savedGames.length > 0) this.savedGames.pop();
+            for (let i=result.length-1; i>0; i--) {
+              let elem = result[i];
+              let el2 = {id: elem.id, Result: elem.Result, Record: elem.Record, lastPlayed: new Date(elem.lastPlayed).toLocaleString()}; 
+              this.savedGames.push(el2);
+            }
+            DB.count().then((res)=> this.storedCounter = res);
+          }
+        });       
+      },
+   },
     watch: {
       // whenever selectedGame changes, this function will run
     selectedGame(newSelGame) {
