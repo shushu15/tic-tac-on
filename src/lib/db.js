@@ -48,7 +48,8 @@ export async function init(){
 }
 /*******
  * @param to_result - String game result, needs processing from null -> *
- * @param to_save - game record itsef
+ * @param to_save - String - game record itsef
+ * @param to_square - Integer - the size of playing square (3). not used now standard 3x3
  */
 export async function saveGame(to_result, to_save, to_square){
   let res =  DB_ERR;
@@ -72,16 +73,10 @@ export async function saveGame(to_result, to_save, to_square){
  export async function getGames(){
   let res =  DB_ERR;
   let result = [];
-  // if (cache.length > 0) {
-  //  result = cache;
-  //  res = DB_OK;
-  // } else {
     try {
       result = await db.getAll(storeGames);
       if (result) {
         res = DB_OK;
-        // result.forEach(element => cache.push(element)); // due to reactivity we need on-element adding
-        // cache.stickers = result;
       }
       else 
         res =  DB_NOTFOUND;
@@ -97,69 +92,14 @@ export async function count() {
   const value = await db.count(storeGames);
   return value;   
 }
-/**
- * @param cache  dbCache.stickers
- */
-/*
- export async function checkForPrize() {
-  let res =  DB_ERR;
-  let prize = DB_NOTFOUND;
-  try {
-    let nMaxGame, nToPrizeMax = 0, nToPrizeSum = 0;
-    let cursor = await db.transaction(storeGames).store.openCursor();
-    while (cursor) {   
-      let nToPrize = Math.round(cursor.value.nToPrize / (cursor.value.prizeCounter * recountCoeff(cursor.value.nToPrize, cursor.value.WB===undefined? 0: cursor.value.WB) + 1)); // we count games played for prize div by the number of issued prizes with coeff for this game
-      // search for the game played most from last prize
-      if (nToPrize > nToPrizeMax) {
-        nToPrizeMax = nToPrize;
-        nMaxGame = cursor.value.gameID;
-      }
-      nToPrizeSum += nToPrize;
-      // console.log(cursor.key, cursor.value);
-      cursor = await cursor.continue();
-    }
-    // console.log(`checkForPrize nToPrizeSum=${nToPrizeSum}`);
-    if (nToPrizeSum >= sumToPrize())  { // add a prize
-      prize = {prize: listPrizes[getRandomInt(listPrizes.length)], color: listColors[getRandomInt(listColors.length)], gameID: nMaxGame, dateIssued: Date.now()};
-      await db.add(storePrizes, prize);
-      // update cache - we can reQuery database or add it to cache manually 
-      // for now I'mm adding just to cache
-      // cache.push(prize);
 
-      // cursor to clear prizeCounters
-      cursor = await db.transaction(storeGames, "readwrite").store.openCursor();
-      while (cursor) {
-        let record = cursor.value;
-        if (record.nToPrize > 0 || record.gameID === nMaxGame) {
-          record.nToPrize = 0;
-          record.WB = 0;
-          record.prizeCounter++;
-          await cursor.update(record);
-        }
-        cursor = await cursor.continue();
-      }
-      res = DB_OK;
-    } else res = DB_NOTFOUND;   
-  } catch(err) {
-    console.log(`db checkForPrize ${err.toString()}`); // eslint-disable-line no-console
-  }
-  return res === DB_OK? prize: res;  
-
+export async function clear() {
+  const value = await db.clear(storeGames);
+  return value;   
 }
-*/
 
 export async function close() {
   db.close();
 }
-/*
-export function clearCache() {
-  while(cache.stickers.length > 0) cache.stickers.pop(); // = undefined;
-}
-*/
-/*
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
-}
-*/
 
 

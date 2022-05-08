@@ -26,8 +26,19 @@
     </div>
     <div class="col-12 md:col-6 field">
       <div class="card">
-        <Button type="button" label="Saved Games" :badge="`${this.storedCounter}`"  />
-        <Dropdown v-model="selectedGame" :options="savedGames" optionLabel="lastPlayed" optionValue="Record" placeholder="Select a Game" />
+      <ConfirmPopup></ConfirmPopup>
+      <Toast />  
+      <Inplace :closable="true" ref="extOperations">
+        <template #display>
+          <Button type="button" label="Saved Games" :badge="`${this.storedCounter}`"  />
+        </template>
+        <template #content>
+          <div class="flex flex-column">
+          <Dropdown v-model="selectedGame" :options="savedGames" optionLabel="lastPlayed" optionValue="Record" placeholder="Select a Game" />
+          <Button @click="confirmDelete($event)" icon="pi pi-times" label="Delete All" class="p-button-danger"></Button>  
+          </div>
+        </template>
+      </Inplace>  
       </div>
     </div>
   </div>
@@ -38,9 +49,12 @@
   import ACell from "./ACell.vue";
   import * as tconst from "@/lib/const.js";
   import * as DB from '@/lib/db.js';
+  import ConfirmPopup from 'primevue/confirmpopup';
+  import Toast from 'primevue/toast';
+
   
  
-
+// 3x3 winning lines
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
@@ -51,6 +65,7 @@
     [0, 4, 8],
     [2, 4, 6],
   ];
+  // data to save for each game
   let gamerecord = {
     moves: [],
     result: ' ',
@@ -60,18 +75,23 @@
     name: "TicBoard",
     components: {
       ACell,
+      ConfirmPopup, Toast,
       /* Button, Dropdown, Badge, */
     },
-  data() { return {
-      board: Array(9).fill(tconst.EMPTY_CELL),
-      turn: tconst.X,
-      winner: tconst.EMPTY_CELL,
-      selectedGame: null,
-      savedGames: [],
-      storedCounter: 0,
-
-    } }, 
+    data() { 
+      return {
+        board: Array(9).fill(tconst.EMPTY_CELL),
+        turn: tconst.X,
+        winner: tconst.EMPTY_CELL,
+        selectedGame: null,
+        savedGames: [],
+        storedCounter: 0,
+      } 
+    }, 
     computed: {
+      /****
+       * Check winer after each move
+       */
       calculateWinner() {
         for (let i = 0; i < lines.length; i++) {
           const [a, b, c] = lines[i];
@@ -80,7 +100,7 @@
             this.board[a] === this.board[b] &&
             this.board[a] === this.board[c]
           ) {
-            console.log(`calculateWinner ${a}`);
+            // console.log(`calculateWinner ${a}`);
             gamerecord.result = this.board[a];
             return lines[i];
           }
@@ -92,14 +112,23 @@
 
         return tconst.EMPTY_CELL;
       },
+      /****
+       * Result from code to humad-readible 
+       */
       result() {
         if (this.winner === tconst.DRAW) return "Draw Game";
         return 'Winner ' + (this.winner === tconst.X? tconst.X: this.winner === tconst.O? tconst.O: 'Undefined');
       },
     },
    methods: {
+     /*****
+      * onClick processing for the board
+      * @param ind - Integer the clicked cell index
+      * @param replay - Boolean - true - to show saved games aniation
+      * 
+      */
       performMove(ind, replay = false) {
-        console.log(`performMove ${ind} ${this.turn}`);
+        // console.log(`performMove ${ind} ${this.turn}`);
         if (this.winner !== tconst.EMPTY_CELL) { // already finished
           return;
         }
@@ -108,21 +137,24 @@
           return;
         }
         this.board.splice(ind, 1, this.turn); // reactively modify 'x';
-        gamerecord.moves.push(this.turn === tconst.X? ind: -ind); // save cell number positive for X negative for O
+        // gamerecord.moves.push(this.turn === tconst.X? ind: -ind); // save cell number positive for X negative for O
+        gamerecord.moves.push(ind); // save cell number as is
         let w = this.calculateWinner;
-        console.log(`performMove 2 ${w}`);
         if (w !== null) {
           if( Array.isArray(w) && w.length > 0) this.winner = this.board[w[0]];
           else if (w === tconst.DRAW) this.winner = w;
           gamerecord.result = this.winner;
-          if (!replay)
-            this.db_saveGame().then(()=> DB.count()).then((res) => this.storedCounter = res);
-          // save game
+          if (!replay)  // save game
+            this.db_saveGame().then(()=> DB.count()).then((res) => this.storedCounter = res);    
         }
         this.changeTurn();
       },
+      /***
+       * the current turn procedures
+       */
       changeTurn(){ this.turn = this.turn == tconst.X? tconst.O: tconst.X},
       setTurn(t){ this.turn = t},
+
       winnerCell(cellNo) {
         if (this.winner) {
           let w = this.calculateWinner;
@@ -147,10 +179,11 @@
             setTimeout(() => {             
               this.performMove(Math.abs(elem), true); }, tconst.MOVING_DELAY * (ind+1)); 
           })
+        this.$refs.extOperations.close();
         }
 
       },
-
+/****** Database - related start */
       async db_init() {
         if(DB.getDB()) {
           console.log('db_init db already in use'); // eslint-disable-line no-console
@@ -186,7 +219,7 @@
           if (typeof result == 'object') {
                 //TODO: fill games list
             while (this.savedGames.length > 0) this.savedGames.pop();
-            for (let i=result.length-1; i>0; i--) {
+            for (let i=result.length-1; i>=0; i--) {
               let elem = result[i];
               let el2 = {id: elem.id, Result: elem.Result, Record: elem.Record, lastPlayed: new Date(elem.lastPlayed).toLocaleString()}; 
               this.savedGames.push(el2);
@@ -195,6 +228,28 @@
           }
         });       
       },
+
+      clearRecords() {
+        DB.clear().then(() => this.fillGamesArray());
+      },
+
+/**** Database - related end */  
+
+      confirmDelete(event) {
+            this.$confirm.require({
+                target: event.currentTarget,
+                message: 'Do you want to delete all saved records?',
+                icon: 'pi pi-info-circle',
+                acceptClass: 'p-button-danger',
+                accept: () => {
+                  this.clearRecords();
+                    this.$toast.add({severity:'error', summary:'Confirmed', detail:'Records deleted', life: 3000});
+                },
+                reject: () => {
+                    this.$toast.add({severity:'success', summary:'Cancelled', detail:'Records not deleted', life: 3000});
+                }
+            });
+        },      
    },
     watch: {
       // whenever selectedGame changes, this function will run
