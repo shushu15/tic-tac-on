@@ -30,7 +30,9 @@
       <Toast />  
       <Inplace :closable="true" ref="extOperations">
         <template #display>
+          <div class="flex flex-column">
           <Button type="button" label="Saved Games" :badge="`${this.storedCounter}`"  />
+          </div>
         </template>
         <template #content>
           <div class="flex flex-column">
@@ -244,9 +246,11 @@
                 accept: () => {
                   this.clearRecords();
                     this.$toast.add({severity:'error', summary:'Confirmed', detail:'Records deleted', life: 3000});
+                    this.$refs.extOperations.close();
                 },
                 reject: () => {
                     this.$toast.add({severity:'success', summary:'Cancelled', detail:'Records not deleted', life: 3000});
+                    this.$refs.extOperations.close();
                 }
             });
         },      
@@ -272,6 +276,8 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
+    max-width: 100vmin;
+    max-height: 100vmin;
   }
 
   .board::before,
@@ -318,12 +324,4 @@
   .vertical-line-2 {
     left: 66%;
   }
-  .btn_new {
-    background: hsla(160, 100%, 37%, 1);
-    border: none;
-    border-radius: 5px;
-    padding: 1rem 1.5rem;
-    color: black;
-    text-transform: uppercase;
-}
 </style>

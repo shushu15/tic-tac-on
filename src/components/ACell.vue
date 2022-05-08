@@ -39,12 +39,12 @@ import * as tconst from "@/lib/const.js"
 <style scoped>
   .acell {
     border: none;
-    width: 10rem;
-    height: 10rem;
+    width: 20vmin;
+    height: 20vmin;
     background: none;
     color: inherit;
-    font-size: 3rem;
-    font-weight: 700;
+    /* font-size: 3rem;
+    font-weight: 700; */
   }
 
   .acell:hover {
@@ -85,7 +85,7 @@ import * as tconst from "@/lib/const.js"
 
   .xo {
     margin: auto;
-    padding: 1rem;
+    padding: 1vmin;
     max-width: 100%;
     max-height: 100%;
     display: block;
