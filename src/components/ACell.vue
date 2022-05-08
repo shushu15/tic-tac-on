@@ -43,10 +43,14 @@ import * as tconst from "@/lib/const.js"
     height: 20vmin;
     background: none;
     color: inherit;
-    /* font-size: 3rem;
-    font-weight: 700; */
   }
-
+@media (max-width: 576px), (max-height: 576px){ 
+  .acell  {
+    width:  25vmin; /* calc(25vmin - 28px); */
+    height: 25vmin; /* calc(25vmin - 28px); */
+  }
+}
+ 
   .acell:hover {
     cursor: pointer;
   }

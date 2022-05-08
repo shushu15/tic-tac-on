@@ -1,4 +1,5 @@
 <template>
+<div class="wrapper">
   <div class="board">
     <span class="vertical-line-1"></span>
     <span class="vertical-line-2"></span>
@@ -13,7 +14,7 @@
   </div>
 
   <div class="p-fluid grid mt-2">
-    <div class="col-12 md:col-6 field">
+    <div class="col-12 sm:col-6 field">
       <div class="card">
         <div v-if="this.winner" >
           <h2>Finished: {{ this.result }} </h2>
@@ -24,7 +25,7 @@
         </div>
       </div>
     </div>
-    <div class="col-12 md:col-6 field">
+    <div class="col-12 sm:col-6 field justify-content-between">
       <div class="card">
       <ConfirmPopup></ConfirmPopup>
       <Toast />  
@@ -35,14 +36,15 @@
           </div>
         </template>
         <template #content>
-          <div class="flex flex-column">
+          <div class="flex flex-column flex-grow-1 sm:flex-grow-0">
           <Dropdown v-model="selectedGame" :options="savedGames" optionLabel="lastPlayed" optionValue="Record" placeholder="Select a Game" />
-          <Button @click="confirmDelete($event)" icon="pi pi-times" label="Delete All" class="p-button-danger"></Button>  
+          <Button @click="confirmDelete($event)" icon="pi pi-times" label="Delete All" class="p-button-danger" v-show="storedCounter > 0"></Button>  
           </div>
         </template>
       </Inplace>  
       </div>
     </div>
+  </div>
   </div>
 
 </template>
@@ -271,14 +273,30 @@
 </script>
 
 <style scoped>
+  .wrapper {
+    max-width: 900px;
+    max-height: 900px;
+    margin: 0;
+    padding: 0;
+
+  }
   .board {
     position: relative;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    max-width: 100vmin;
-    max-height: 100vmin;
+    width: 64vmin;
+    height: 64vmin;
+
   }
+
+@media (max-width: 576px), (max-height: 576px){ 
+  .board  {
+    width: 80vmin; /* calc(80vmin - 80px); */
+    height: 80vmin; /* calc(80vmin - 80px); */
+  }
+}
+
 
   .board::before,
   .board::after {
