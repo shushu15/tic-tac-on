@@ -1,14 +1,20 @@
 <template>
   <div class="acell" :name="label" :class="this.glow? 'addwinner': ''">
-    <img alt="X" class="xo" src="./../assets/fa-x.svg"  v-if="valX(value)" />
-    <img alt="O" class="xo" src="./../assets/fa-o.svg" v-if="valO(value)" />
+    <i><IconX  v-if="valX(value)" class="xo" /></i>
+    <i><IconO v-if="valO(value)" class="xo" /></i>
   </div>
 </template>
 
 <script> 
 import * as tconst from "@/lib/const.js"
+import IconX from "./IconX.vue";
+import IconO from "./IconO.vue";
 
   export default {
+    name: "ACell",
+    components: {
+      IconX, IconO,
+    },    
     props: {
       label: String,
       value: {
