@@ -17,16 +17,16 @@
     <div class="col-12 sm:col-6 field">
       <div class="card">
         <div v-if="this.winner" >
-          <h2>Finished: {{ this.result }} </h2>
+          <div class="text-lg sm:text-xl">Finished: {{ this.result }} </div>
           <Button @click="startGame" label="Play Again" icon="pi pi-replay" class="p-button-success"></Button>
         </div>
         <div v-else>
-          <h2>Turn: {{ this.turn }}</h2>
+          <div class="text-lg sm:text-xl">Turn: {{ this.turn }}</div>
         </div>
       </div>
     </div>
     <div class="col-12 sm:col-6 field justify-content-between">
-      <div class="card">
+      <div>
       <ConfirmPopup></ConfirmPopup>
       <Toast />  
       <Inplace :closable="true" ref="extOperations">
@@ -55,6 +55,7 @@
   import * as DB from '@/lib/db.js';
   import ConfirmPopup from 'primevue/confirmpopup';
   import Toast from 'primevue/toast';
+  
 
   
  
@@ -169,6 +170,9 @@
         return false;
 
       },
+      /****
+       * Clear data for the new game
+       */
       startGame() {
         this.board.fill(tconst.EMPTY_CELL);
         this.turn= tconst.X;
@@ -176,12 +180,15 @@
         gamerecord.moves = [];
         gamerecord.result = ' ';
       },
+      /*****
+       * Load the selected game 
+       */
       loadGame() {
         this.startGame();
         if (this.selectedGame && Array.isArray(this.selectedGame)) {
           this.selectedGame.forEach((elem, ind) => {
             setTimeout(() => {             
-              this.performMove(Math.abs(elem), true); }, tconst.MOVING_DELAY * (ind+1)); 
+              this.performMove(elem, true); }, tconst.MOVING_DELAY * (ind+1)); 
           })
         this.$refs.extOperations.close();
         }
@@ -268,7 +275,11 @@
     },
     mounted() {
       this.db_init();
-    }
+    },
+    beforeUnmount() {
+      DB.close();
+  },
+
 }
 </script>
 
@@ -287,6 +298,7 @@
     grid-template-rows: repeat(3, 1fr);
     width: 64vmin;
     height: 64vmin;
+    margin: auto;
 
   }
 
@@ -297,6 +309,12 @@
   }
 }
 
+@media (max-width: 500px), (max-height: 500px){ 
+  .board  {
+    width: 88vmin; /* calc(80vmin - 80px); */
+    height: 88vmin; /* calc(80vmin - 80px); */
+  }
+}
 
   .board::before,
   .board::after {

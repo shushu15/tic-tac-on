@@ -56,7 +56,14 @@ import IconO from "./IconO.vue";
     height: 25vmin; /* calc(25vmin - 28px); */
   }
 }
- 
+
+@media (max-width: 500px), (max-height: 500px){ 
+  .acell  {
+    width:  28vmin; /* calc(25vmin - 28px); */
+    height: 28vmin; /* calc(25vmin - 28px); */
+  }
+}
+
   .acell:hover {
     cursor: pointer;
   }
