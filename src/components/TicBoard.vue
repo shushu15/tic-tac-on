@@ -91,6 +91,7 @@
         selectedGame: null,
         savedGames: [],
         storedCounter: 0,
+        loading: false,
       } 
     }, 
     computed: {
@@ -137,7 +138,7 @@
         if (this.winner !== tconst.EMPTY_CELL) { // already finished
           return;
         }
-        if (this.board[ind] !== tconst.EMPTY_CELL) {
+        if (this.board[ind] !== tconst.EMPTY_CELL || (this.loading && !replay)) {
           // Invalid move.
           return;
         }
@@ -179,6 +180,7 @@
         this.winner= tconst.EMPTY_CELL;
         gamerecord.moves = [];
         gamerecord.result = ' ';
+        this.loading = false;
       },
       /*****
        * Load the selected game 
@@ -186,12 +188,15 @@
       loadGame() {
         this.startGame();
         if (this.selectedGame && Array.isArray(this.selectedGame)) {
+          this.loading = true;
           this.selectedGame.forEach((elem, ind) => {
             setTimeout(() => {             
               this.performMove(elem, true); }, tconst.MOVING_DELAY * (ind+1)); 
-          })
-        this.$refs.extOperations.close();
+          });
+          setTimeout(() => { this.loading = false; }, 
+            tconst.MOVING_DELAY * (this.selectedGame.length+1)); 
         }
+        this.$refs.extOperations.close();
 
       },
 /****** Database - related start */
